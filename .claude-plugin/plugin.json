@@ -1,6 +1,6 @@
 {
   "name": "spacedock",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Deploy a directory to a live HTTPS URL in ~1s, then read back what happened — startup errors, logs, screenshots, SQL over the app's database, fork-with-state.",
   "author": {
     "name": "Devonchain Software SRL",
