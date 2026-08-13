@@ -9,7 +9,7 @@ Deploy a directory, get a live HTTPS URL in ~1s. Built so you can close the loop
 human pasting anything: every call returns the whole outcome, errors first.
 
 The `spacedock` MCP server ships with this plugin. It needs `PLATFORM_API_KEY` in the
-environment — if every call returns `unknown api key`, that is the missing piece and the user
+environment — if every call returns `invalid api key`, that is the missing piece and the user
 mints one at spacesagents.com under **Account**.
 
 ## The loop

@@ -81,9 +81,8 @@ The skill in `skills/spacedock/` is plain markdown — paste it into a system pr
 
 | symptom | cause |
 |---|---|
-| server never connects, no tools | `PLATFORM_API_KEY` unset, or the session was not restarted |
-| `unknown api key` | key revoked, or an unexpanded `${PLATFORM_API_KEY}` reaching the server |
-| tools appear but every call 401s | key from a different box than `PLATFORM_API_URL` |
+| server never connects, no tools | the session was not restarted after installing, or Node is older than 18 |
+| tools appear, but every call returns `invalid api key` | `PLATFORM_API_KEY` not exported (the literal `${PLATFORM_API_KEY}` reaches the server), key revoked, or a key from a different box than `PLATFORM_API_URL` |
 | `fetch failed` | `PLATFORM_API_URL` unreachable, or a self-signed certificate on a self-hosted box (add `"NODE_TLS_REJECT_UNAUTHORIZED": "0"`) |
 | `bundle is N MB, cap is 50MB` | client-side cap. Add large files to `.gitignore` — bundling is gitignore-aware inside a repo |
 | `deploy` says `healthy`, the URL 502s with `Connect` | the app bound `127.0.0.1`. The probe runs inside the container; traffic does not. Bind `0.0.0.0` |
