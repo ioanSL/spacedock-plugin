@@ -49,9 +49,14 @@ empty `{"apps": []}` on a fresh account. Then hand it a directory and ask it to 
 | `list_apps` | — | every app with `url`, `state`, `tier`, `last_deploy` |
 | `destroy` | `app` | not reversible |
 
-`status` is `healthy`, `crashed` or `timeout`, and only `healthy` means the URL serves. A
+`status` is `healthy`, `crashed` or `timeout`, and only `healthy` means the URL serves — the
+platform requests `GET /` from outside the container before moving traffic, so an app that
+starts and then errors on every request comes back as a failure rather than a success. A
 crashed deploy comes back **as a crash** and traffic is never moved onto it, so the previous
 version keeps serving — which is what makes the loop safe to run unattended.
+
+Every deploy also reports a `bundle` manifest — what was uploaded, and what was excluded and
+why. If something you expected to deploy is missing, that array says so.
 
 ## Without the plugin
 
@@ -85,7 +90,8 @@ The skill in `skills/spacedock/` is plain markdown — paste it into a system pr
 | tools appear, but every call returns `invalid api key` | `PLATFORM_API_KEY` not exported (the literal `${PLATFORM_API_KEY}` reaches the server), key revoked, or a key from a different box than `PLATFORM_API_URL` |
 | `fetch failed` | `PLATFORM_API_URL` unreachable, or a self-signed certificate on a self-hosted box (add `"NODE_TLS_REJECT_UNAUTHORIZED": "0"`) |
 | `bundle is N MB, cap is 50MB` | client-side cap. Add large files to `.gitignore` — bundling is gitignore-aware inside a repo |
-| `deploy` says `healthy`, the URL 502s with `Connect` | the app bound `127.0.0.1`. The probe runs inside the container; traffic does not. Bind `0.0.0.0` |
+| the app deployed but a file is missing | check `bundle.excluded[]` in the deploy response. Inside a repo, gitignored paths do not ship — build output included, if `.gitignore` lists it |
+| `deploy` fails with `GET / -> error ... listen on 0.0.0.0` | the app bound `127.0.0.1`. Traffic arrives on the container's bridge address, not loopback |
 
 ## License
 
