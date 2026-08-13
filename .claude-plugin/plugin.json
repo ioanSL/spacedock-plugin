@@ -1,0 +1,12 @@
+{
+  "name": "spacedock",
+  "version": "0.1.0",
+  "description": "Deploy a directory to a live HTTPS URL in ~1s, then read back what happened — startup errors, logs, screenshots, SQL over the app's database, fork-with-state.",
+  "author": {
+    "name": "ioanSL",
+    "url": "https://github.com/ioanSL"
+  },
+  "homepage": "https://spacesagents.com",
+  "license": "MIT",
+  "keywords": ["deploy", "hosting", "mcp", "spacedock"]
+}

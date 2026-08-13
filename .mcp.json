@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "spacedock": {
+      "command": "npx",
+      "args": ["-y", "spacedock-mcp"],
+      "env": {
+        "PLATFORM_API_URL": "${PLATFORM_API_URL:-https://api.spacesagents.com}",
+        "PLATFORM_API_KEY": "${PLATFORM_API_KEY}"
+      }
+    }
+  }
+}

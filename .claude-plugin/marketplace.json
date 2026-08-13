@@ -1,0 +1,15 @@
+{
+  "name": "spacedock",
+  "owner": {
+    "name": "ioanSL",
+    "url": "https://github.com/ioanSL"
+  },
+  "plugins": [
+    {
+      "name": "spacedock",
+      "source": "./",
+      "version": "0.1.0",
+      "description": "Deploy a directory to a live HTTPS URL in ~1s, then read back what happened — startup errors, logs, screenshots, SQL over the app's database, fork-with-state."
+    }
+  ]
+}
