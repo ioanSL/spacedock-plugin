@@ -31,24 +31,34 @@ previous version serving.
   "startup_ms": 343,
   "entry_cmd": "bun run index.ts",
   "errors": [],
+  "root_check": { "ok": true, "status": 200 },
+  "bundle": { "via": "git", "files": 12, "top_level": ["index.ts", "public"], "excluded": [] },
   "log_tail": ["fibonacci listening on :8080"]
 }
 ```
 
 `status` is one of `healthy`, `crashed`, `timeout`. Only `healthy` means the URL works.
 
+**`healthy` means something actually requested the app.** Before traffic moves, the platform
+issues a real `GET /` from outside the container and fails the deploy on a transport error or
+a 5xx, with the status line and a body excerpt in `errors`. A 4xx passes and is reported —
+an API-only app answering 404 on `/` is not broken. So `status: "healthy"` plus a URL that
+errors is no longer a state you have to go looking for.
+
+**`bundle` is what got uploaded.** `top_level` and `files` are what arrived; `excluded[]` is
+what did not, with a reason. A non-empty `excluded[]` is a warning worth reading before you
+debug anything else — if the thing you meant to deploy is in that list, that is your bug.
+
 ## Before the first deploy
 
 Three things decide whether it comes up. Get them right and you rarely need a second attempt.
 
-**1. Bind `0.0.0.0`, never `127.0.0.1`.** This is the one failure that lies to you. The
-health probe runs *inside* the container against `127.0.0.1:8080`, but traffic arrives from
-the proxy on the container's bridge address. An app listening only on loopback reports
-**`status: "healthy"` with empty `errors`, and then 502s on its real URL** with
-`{"error": "app is not serving", "reason": "upstream: client error (Connect)"}` — measured,
-not theorised. Bun's `port` and Node's `server.listen(port)` bind all interfaces by default;
-the trap is writing the host explicitly. If a deploy reports healthy and the URL 502s with
-`Connect`, this is why.
+**1. Bind `0.0.0.0`, never `127.0.0.1`.** Traffic arrives from the proxy on the container's
+bridge address, so an app listening only on loopback is unreachable however healthy it looks
+from inside. This now fails the deploy rather than lying about it — the `GET /` runs from
+outside the container, and a loopback-only app refuses it — but the fix is still yours. Bun's
+`port` and Node's `server.listen(port)` bind all interfaces by default; the trap is writing
+the host explicitly.
 
 **2. Listen on `process.env.PORT`.** It is always `8080`, but read the variable.
 
@@ -57,27 +67,50 @@ the trap is writing the host explicitly. If a deploy reports healthy and the URL
 - `scripts.start` in `package.json` → runs `bun run start`
 - otherwise the first of `index.ts`, `index.tsx`, `index.js`, `server.ts`, `server.js`,
   `main.ts`, `app.ts`, `src/index.ts`, `src/index.js`, `src/server.ts`
+- otherwise an `index.html` at the root → served as a static site (below)
 
-No match is an error naming both options. A `package.json` triggers `bun install` against a
+No match is an error naming all three. A `package.json` triggers `bun install` against a
 shared content-addressed cache; **no `package.json` skips install entirely**, which is the
 fastest path for a single-file app.
+
+## Static sites
+
+**Do not write a file server.** A bundle whose root has an `index.html` and no entry point is
+served statically: directory index, MIME types, and an SPA fallback for extensionless paths
+(a missing `.js` gets a 404 rather than your HTML with a 200). Deploy the build output
+directly — `deploy("./dist")` — and nothing else is needed.
+
+There is **no build step on the platform**: `bun install` runs, `scripts.build` does not. Run
+the build locally and deploy its output. Apps have 128MB and half a vCPU, which is under what
+a Vite build wants, so this is a deliberate boundary rather than a missing feature.
 
 Runtime is Bun (TypeScript/JavaScript) — no Python, Ruby, or JVM. A prebuilt static binary
 works via `{"scripts": {"start": "./server"}}`, which is a documented accident rather than a
 contract — it holds only for a static `linux/amd64` binary and nothing keeps it working.
 
-## When it crashes
+## When something is wrong
 
-The response already contains what you need — read `errors` first, then `log_tail`. Do not
-call `logs` to find out why a deploy failed; call it to watch an app that came up and then
-misbehaved.
+Two different situations, and the second one is the one people get wrong:
+
+**The deploy came back `crashed` or `timeout`.** The response already has it: read `errors`,
+then `log_tail`. You do not need `logs` for this.
+
+**The deploy came back `healthy` but the app behaves wrongly at its URL — call `logs`
+first.** Not a screenshot, not a guess at the cause, not another deploy: `logs`. This is the
+case where the answer is already recorded and nothing has shown it to you yet. A single line
+like `ENOENT: no such file or directory, open '/app/src/dist/index.html'` names the whole
+problem, and it is sitting in `logs` from the first bad request.
+
+The general rule underneath it: **a status is a claim, not evidence.** The moment what you
+observe contradicts what a deploy reported, stop reasoning from the status and read the logs.
 
 The runner restarts a dying process 3 times with backoff before giving up. After that the URL
 serves a 502 whose body carries the same error lines, so a user hitting the URL sees what you
 would.
 
 `logs(app, since?, level?, limit?)` takes `level: "error"` to get only stderr, and an RFC3339
-`since` to avoid re-reading what you have already seen.
+`since` to avoid re-reading what you have already seen. Lines come back oldest first, and
+within one stack trace they are in the order the app printed them.
 
 ## Screenshots
 
@@ -167,7 +200,7 @@ URL.
 
 | | |
 |---|---|
-| Bundle | 50MB via MCP (platform accepts 64MB). Gitignore-aware inside a repo, so `node_modules` is excluded for free |
+| Bundle | 50MB via MCP (platform accepts 64MB). Inside a repo `git ls-files` decides, so anything gitignored is left out — **including your build output, if `.gitignore` lists it**. Outside a repo a default list drops `node_modules`, `.git`, `.env*`, `*.pem`, `*.key`, `id_rsa*`. Either way the response's `bundle.excluded[]` names what went missing |
 | Memory / CPU | 128MB, 0.5 vCPU per app |
 | WebSockets | **not proxied** — an app needing them will not work |
 | Screenshot | root path only |
