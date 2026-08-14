@@ -49,6 +49,12 @@ errors is no longer a state you have to go looking for.
 what did not, with a reason. A non-empty `excluded[]` is a warning worth reading before you
 debug anything else — if the thing you meant to deploy is in that list, that is your bug.
 
+**Five apps per account on the free plan.** `app limit reached: 5 of 5` means the account is
+full, not that anything is broken: `deploy` to a *new* name and `fork` both refuse there,
+while redeploying an app that already exists never does. Retrying is pointless — `destroy`
+something first, and the slot is usable immediately. `list_apps` is how you see what is
+taking the five.
+
 ## Before the first deploy
 
 Three things decide whether it comes up. Get them right and you rarely need a second attempt.
