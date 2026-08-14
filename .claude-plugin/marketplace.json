@@ -8,7 +8,7 @@
     {
       "name": "spacedock",
       "source": "./",
-      "version": "0.1.2",
+      "version": "0.2.0",
       "description": "Deploy a directory to a live HTTPS URL in ~1s, then read back what happened — startup errors, logs, screenshots, SQL over the app's database, fork-with-state."
     }
   ]
