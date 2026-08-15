@@ -193,6 +193,20 @@ Two failures to avoid rather than debug:
 reads a secret back out, by design. Deploy again after setting one, or the app will not see
 it. Names are listable; values never leave the box.
 
+Pass `env` instead of `key`/`value` to set a whole `.env` in one call:
+`set_secret(app, env={"STRIPE_KEY": "...", "DATABASE_URL": "..."})`. That is the form to
+use when you have just read a config file — one call, not one per line.
+
+**Never deploy a `.env` file.** `deploy` drops them from the bundle, along with `*.pem`,
+`*.key` and `id_rsa*`, so an app that reads its config from a checked-in `.env` will come
+up with none of it. Read the file, `set_secret` it, deploy. Secrets set this way are
+encrypted at rest and arrive as ordinary environment variables, which is what the app
+already expects.
+
+A secret whose name collides with one the runner sets — `PORT`, `HOST`, `DATA_DIR`,
+`NODE_ENV` — overrides it. `PORT` is the one that bites: the app then listens somewhere the
+health probe is not, and the deploy fails as unreachable rather than as misconfigured.
+
 ## Access control — tell the user this
 
 An app's URL is currently its *only* access control. The subdomain suffix is unguessable
