@@ -87,7 +87,7 @@ served statically: directory index, MIME types, and an SPA fallback for extensio
 directly — `deploy("./dist")` — and nothing else is needed.
 
 There is **no build step on the platform**: `bun install` runs, `scripts.build` does not. Run
-the build locally and deploy its output. Apps have 128MB and half a vCPU, which is under what
+the build locally and deploy its output. Apps have 256MB and half a vCPU, which is under what
 a Vite build wants, so this is a deliberate boundary rather than a missing feature.
 
 Runtime is Bun (TypeScript/JavaScript) — no Python, Ruby, or JVM. A prebuilt static binary
@@ -221,7 +221,7 @@ URL.
 | | |
 |---|---|
 | Bundle | 50MB via MCP (platform accepts 64MB). Inside a repo `git ls-files` decides, so anything gitignored is left out — **including your build output, if `.gitignore` lists it**. Outside a repo a default list drops `node_modules`, `.git`, `.env*`, `*.pem`, `*.key`, `id_rsa*`. Either way the response's `bundle.excluded[]` names what went missing |
-| Memory / CPU | 128MB, 0.5 vCPU per app |
+| Memory / CPU | 256MB, 0.5 vCPU per app |
 | WebSockets | **not proxied** — an app needing them will not work |
 | Screenshot | root path only |
 | `destroy` | deletes the app, its container, its data and its URL. **Not reversible** — confirm with the user first |
