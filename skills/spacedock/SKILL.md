@@ -1,6 +1,6 @@
 ---
 name: spacedock
-description: Deploy a directory to a live HTTPS URL on SpaceDock and read back what happened — startup errors, logs, screenshots, SQL over its database, fork-with-state. Use when deploying or redeploying an app, diagnosing why a deployed app is broken or 502ing, reading its runtime logs, screenshotting it, querying or migrating its database (its own SQLite, or an external Postgres), forking it to try a migration, promoting a fork, setting a secret, or destroying an app. Also covers what runtimes are supported — Bun/TypeScript and a compiled Rust or Go binary. Also use when the user says "deploy this", "ship it", "put this on a URL", or mentions SpaceDock or the spacedock MCP tools.
+description: Deploy a directory to a live HTTPS URL on SpaceDock and read back what happened — startup errors, logs, screenshots, SQL over its database, fork-with-state. Use when deploying or redeploying an app, diagnosing why a deployed app is broken or 502ing, reading its runtime logs, screenshotting it, querying or migrating its database (its own SQLite, or an external Postgres), forking it to try a migration, promoting a fork, setting a secret, tagging an app so the app list can be filtered, or destroying an app. Also covers what runtimes are supported — Bun/TypeScript and a compiled Rust or Go binary. Also use when the user says "deploy this", "ship it", "put this on a URL", or mentions SpaceDock or the spacedock MCP tools.
 ---
 
 # SpaceDock
@@ -291,6 +291,21 @@ already expects.
 A secret whose name collides with one the runner sets — `PORT`, `HOST`, `DATA_DIR`,
 `NODE_ENV` — overrides it. `PORT` is the one that bites: the app then listens somewhere the
 health probe is not, and the deploy fails as unreachable rather than as misconfigured.
+
+## Tags
+
+`set_tags(app, tags)` sets the labels the console groups and filters the app list by. Nothing
+on the box reads them — not the reaper, not the router, not the quota — so they are for
+whoever is looking at that list, which is the user rather than you.
+
+**It replaces the whole set.** `set_tags(app, ["prod"])` on an app already tagged `api` leaves
+it tagged `prod` and nothing else. To add one, read `list_apps` first — every app it returns
+carries its `tags` — and send the union. `set_tags(app, [])` clears them.
+
+Names are lowercased and slugified on the way in, so `Client X` is stored as `client-x`: the
+value that comes back is not always the value you sent, and it is the one to repeat to the
+user. 8 per app, 24 characters each — past either the call fails rather than quietly dropping
+or truncating.
 
 ## Access control — tell the user this
 
