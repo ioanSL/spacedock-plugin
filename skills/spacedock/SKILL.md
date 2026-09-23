@@ -10,7 +10,7 @@ human pasting anything: every call returns the whole outcome, errors first.
 
 The `spacedock` MCP server ships with this plugin. It needs `PLATFORM_API_KEY` in the
 environment — if every call returns `invalid api key`, that is the missing piece and the user
-mints one at spacesagents.com under **Account**.
+mints one in the console, https://spacedock-console-production.up.railway.app, under **Account**.
 
 ## The loop
 

@@ -23,7 +23,7 @@ Then export your key and restart the session — MCP servers are read at startup
 export PLATFORM_API_KEY=sk_your_key
 ```
 
-Mint the key at [spacesagents.com](https://spacesagents.com) under **Account**. Point
+Mint the key in the [console](https://spacedock-console-production.up.railway.app) under **Account**. Point
 `PLATFORM_API_URL` at your own box if you self-host; it defaults to
 `https://api.spacesagents.com`.
 
