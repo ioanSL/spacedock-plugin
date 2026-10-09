@@ -52,8 +52,10 @@ empty `{"apps": []}` on a fresh account. Then hand it a directory and ask it to 
 `status` is `healthy`, `crashed` or `timeout`, and only `healthy` means the URL serves — the
 platform requests `GET /` from outside the container before moving traffic, so an app that
 starts and then errors on every request comes back as a failure rather than a success. A
-crashed deploy comes back **as a crash** and traffic is never moved onto it, so the previous
-version keeps serving — which is what makes the loop safe to run unattended.
+crashed deploy comes back **as a crash**, but it does not leave the previous version serving:
+the old process stops before the new one starts, so a failed deploy takes the URL down until a
+deploy comes back `healthy`. For an app people rely on, deploy the change to a `fork` and
+`promote` it.
 
 Every deploy also reports a `bundle` manifest — what was uploaded, and what was excluded and
 why. If something you expected to deploy is missing, that array says so.
